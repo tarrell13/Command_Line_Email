@@ -15,14 +15,13 @@ or Twitter account.
 Functionality:
 
     (1) Take in command line arguments
-    (2) Logs into email account using username and password
-    (3) Sends a message to the recipient
+    (2) Sends a message to the recipient
 
 Requirements:
 
     (1) Accept command line arguments using sys
-    (2) Finds appropriate username and password field tags to log in using webdriver
-    (3) Uses webdriver to select compose message field
+    (2) Uses smtplib to verify source and recipient
+    (3) Uses smtp to send the message to the clientp
     (4) Takes command line string to enter into compose field and then send
 
 Usage: ./commandEmail.py -s source@domain -r recipient@domain -m The Message
@@ -33,13 +32,11 @@ Required
 
 NOTES:
 
-    (1) Be sure to add browser driver to path of browser you want to use. Such as
-    browser = webdriver.Chrome(), this method will check PATH for chromedriver
-
 Examples:....(1) ./commandEmail.py -s johnny@yahoo.com -t sarah@gmail.com  -m This is a Test
 '''
 
-from selenium import webdriver
+import smtplib
+import getpass
 import sys
 import re
 import getopt
@@ -51,6 +48,7 @@ source_address = ""
 recipient_address = ""
 message = ""
 
+'''Prints the usage out to the user'''
 def usage():
     print("Usage:  ./commandEmail.py -s source@domain -r recipient@domain -m <Message to Compose>")
     print("Required:")
@@ -90,15 +88,6 @@ def gmailCheck(address):
     else:
         return False
 
-'''Pattern Matching for Verizon Address'''
-def verizonCheck(address):
-
-    verizon = re.compile(r"@verizon.net")
-    if re.search(verizon, address):
-        return True
-    else:
-        return False
-
 '''Pattern Matching for Yahoo Address'''
 def yahooCheck(address):
 
@@ -108,20 +97,37 @@ def yahooCheck(address):
     else:
         return False
 
+def verizonCheck(address):
 
-def gmailPage(data, recAddress):
+    verizon = re.compile(r"@verizon.net")
+    if re.search(verizon, address):
+        return True
+    else:
+        return False
 
-    url = "https://mail.google.com/mail/u/0/#inbox"
-    browser = webdriver.Chrome()
-    browser.get(url)
+def password():
+    pw = getpass.getpass("Enter password for %s: " %source_address)
+    return pw
 
-    # Locate Compose button
-    compose_element = browser.find_element_by_class_name("T-I J-J5-Ji T-I-KE L3")
-    compose_element.submit()
+'''Main function will craft the message and send to the client'''
+def main():
 
-    # Put Recipient and Message into Compose Field and Send
+    options()
+
+    try:
+        if verizonCheck(source_address):
+            smObj = smtplib.SMTP("smtp.verizon.net", 587)
+            smObj.ehlo()
+            smObj.starttls()
+            smObj.login(source_address, password())
+            smObj.sendmail(source_address, recipient_address, message)
+
+        smObj.close()
+    except:
+        print("Invalid")
 
 
-options()
+
+main()
 
 
