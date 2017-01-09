@@ -105,6 +105,15 @@ def verizonCheck(address):
     else:
         return False
 
+def comcastCheck(address):
+
+    comcast = re.compile(r"@comcast.net")
+    if re.search(comcast, address):
+        return True
+    else:
+        return False
+
+
 def password():
     pw = getpass.getpass("Enter password for %s: " %source_address)
     return pw
@@ -121,8 +130,26 @@ def main():
             smObj.starttls()
             smObj.login(source_address, password())
             smObj.sendmail(source_address, recipient_address, message)
+        elif gmailCheck(source_address):
+            smObj = smtplib.SMTP("smtp.gmail.com", 587)
+            smObj.ehlo()
+            smObj.starttls()
+            smObj.login(source_address, password())
+            smObj.sendmail(source_address, recipient_address, message)
+        elif yahooCheck(source_address):
+            smObj = smtplib.SMTP("smtp.mail.yahoo.com", 587)
+            smObj.ehlo()
+            smObj.starttls()
+            smObj.login(source_address, password())
+            smObj.sendmail(source_address, recipient_address, message)
+        elif comcastCheck(source_address):
+            smObj = smtplib.SMTP("smtp.comcast.net", 587)
+            smObj.ehlo()
+            smObj.starttls()
+            smObj.login(source_address, password())
+            smObj.sendmail(source_address, recipient_address, message)
 
-        smObj.close()
+        smObj.quit()
     except:
         print("Invalid")
 
