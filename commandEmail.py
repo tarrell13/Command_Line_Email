@@ -40,7 +40,6 @@ import getpass
 import sys
 import re
 import getopt
-import os
 
 commands = ["-s", "-r", "-m"]
 
